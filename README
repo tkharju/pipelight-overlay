@@ -5,7 +5,9 @@ layman -o https://raw.github.com/ryao/pipelight-overlay/master/overlay.xml -f -a
 Note that you must have both dev-vcs/git and app-portage/layman installed on
 your system for this to work.
 
-Installation of pipelight requires keywording a few packages. An example follows:
+Installation of pipelight requires keywording a few packages and configuring a new category. An example follows:
+
+echo cross-i686-w64-mingw32 >> /etc/portage/categories
 
 mkdir -p /etc/portage/package.keywords
 echo app-emulation/wine-compholio ~* >> /etc/portage/package.keywords/pipelight-overlay
