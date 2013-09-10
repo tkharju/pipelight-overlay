@@ -1,0 +1,94 @@
+#!/bin/sh
+
+BROWSER_PROFILE="${WINEPREFIX}/drive_c/browser-profile";
+PKG_DIR="/usr/share/wine-browser-installer";
+
+# Install a Firefox setting
+conf_ff_setting () {
+	PREF_KEY="$1";
+	PREF_VALUE="$2";
+	PREFERENCES=$(cat "${BROWSER_PROFILE}/prefs.js");
+	HAS_KEY=$(echo "${PREFERENCES}" | grep -c "${PREF_KEY}");
+	if [ "${HAS_KEY}" -eq "0" ]; then
+		PREFERENCES=$(echo "${PREFERENCES}"; echo "user_pref(\"${PREF_KEY}\", \"placeholder\");");
+	fi
+	PREFERENCES=$(echo "${PREFERENCES}" | sed 's|\(user_pref("'"${PREF_KEY}"'", \)[^)]*\();\)|\1'"${PREF_VALUE}"'\2|');
+	echo "${PREFERENCES}" > "${BROWSER_PROFILE}/prefs.js";
+}
+
+# Install a registry setting
+conf_reg_setting () {
+	KEY=$(echo "$1" | sed -e 's|\\[^\\]*$||' -e 's|^HKCU|HKEY_CURRENT_USER|' \
+		-e 's|^HKLM|HKEY_LOCAL_MACHINE|' -e 's|^HKCC|HKEY_CURRENT_CONFIG|' \
+		-e 's|^HKCR|HKEY_CLASSES_ROOT|' -e 's|^HKU|HKEY_USERS|');
+	SUBKEY=$(echo "$1" | sed 's|^.*\\||');
+	VALUE="$2";
+	tmpfile="/tmp/wine-browser.$$.reg";
+	echo -e "REGEDIT4\n\n[${KEY}]\n\"${SUBKEY}\"=${VALUE}\n" >${tmpfile};
+	${WINE} regedit ${tmpfile};
+	rm ${tmpfile};
+}
+
+# Return the string indicating whether direct rendering is enabled
+# NOTE: Requires the output of glxinfo as the first parameter
+get_direct_rendering() {
+	echo "$1" | sed -n 's|direct rendering: ||p'
+}
+
+# Return the OpenGL vendor information
+# NOTE: Requires the output of glxinfo as the first parameter
+get_ogl_vendor() {
+	echo "$1" | sed -n 's|OpenGL vendor string: ||p';
+}
+
+# Return the OpenGL version information
+# NOTE: Requires the output of glxinfo as the first parameter
+get_ogl_version() {
+	echo "$1" | sed -n 's|OpenGL version string: ||p';
+}
+
+# Return the OpenGL renderer information
+# NOTE: Requires the output of glxinfo as the first parameter
+get_ogl_renderer() {
+	echo "$1" | sed -n 's|OpenGL renderer string: ||p';
+}
+
+# Return the GLX version information
+# NOTE: Requires the output of glxinfo as the first parameter
+get_glx_version() {
+	echo "$1" | sed -n 's|server glx version string: ||p';
+}
+
+# Setup the plugin configuration to use this specific version of Silverlight (for profiles with more than one version)
+setup_silverlight () {
+	SILVERLIGHT_VERSION="$1";
+
+	# Configure the plugin registry key for the Windows Firefox version
+	tmpfile="/tmp/wine-browser.$$.reg";
+	cat >"${tmpfile}" <<-EOF
+		REGEDIT4
+
+		[HKEY_LOCAL_MACHINE\\Software\\MozillaPlugins\\@Microsoft.com/NpCtrl,version=1.0]
+		"Path"="C:\\\\Program Files\\\\Silverlight\\\\${SILVERLIGHT_VERSION}\\\\npctrl.dll"
+	EOF
+	${WINE} regedit ${tmpfile};
+	rm ${tmpfile};
+	# Configure the Pipelight settings for the Linux Firefox version
+	PIPELIGHT_CONFIG="${HOME}/.config/pipelight";
+	if [ ! -f "${PIPELIGHT_CONFIG}" ]; then
+		PIPELIGHT_CONFIG="/usr/share/pipelight/pipelight";
+		if [ ! -f "${PIPELIGHT_CONFIG}" ]; then
+			PIPELIGHT_CONFIG="";
+		fi
+	fi
+	if [ "${PIPELIGHT_CONFIG}" != "" ]; then
+		dllPath='C:\\Program Files\\Silverlight\\'"${SILVERLIGHT_VERSION}"'\\';
+		dependencyInstaller="${PKG_DIR}/install-dependency";
+		cat "${PIPELIGHT_CONFIG}" | sed \
+			-e "s|\(winePath[ \t]*=\).*|\1 ${WINE}|g" \
+			-e "s|\(winePrefix[ \t]*=\).*|\1 ${WINEPREFIX}|g" \
+			-e "s|\(dllPath[ \t]*=\).*|\1 ${dllPath}|g" \
+			-e "s|\(dependencyInstaller[ \t]*=\).*|\1 ${dependencyInstaller}|g" \
+		>"${WINEPREFIX}/pipelight-config";
+	fi
+}

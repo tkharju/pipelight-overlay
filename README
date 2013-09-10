@@ -1,0 +1,19 @@
+To add this overlay to a Gentoo system, run the following command:
+
+layman -o https://raw.github.com/ryao/pipelight-overlay/master/overlay.xml -f -a pipelight
+
+Note that you must have both dev-vcs/git and app-portage/layman installed on
+your system for this to work.
+
+Installation of pipelight requires keywording a few packages. An example follows:
+
+mkdir -p /etc/portage/package.keywords
+echo app-emulation/wine-compholio ~* >> /etc/portage/package.keywords/pipelight-overlay
+echo =cross-i686-w64-mingw32/gcc-4.7.3 ~* >> /etc/portage/package.keywords/pipelight-overlay
+echo cross-i686-w64-mingw32/binutils ~* >> /etc/portage/package.keywords/pipelight-overlay
+echo cross-i686-w64-mingw32/mingw64-runtime  ~* >> /etc/portage/package.keywords/pipelight-overlay
+echo =www-plugin/pipelight-9999 ** >> /etc/portage/package.keywords/pipelight-overlay
+
+emerge =www-plugin/pipelight-9999
+
+Note that GCC 4.8.* fails at time of writing, so 4.7.3 from the 4.7 series is recommended.

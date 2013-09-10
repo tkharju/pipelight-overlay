@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE repositories SYSTEM "repositories.dtd">
+<repositories xmlns="" version="1.0">
+  <repo quality="experimental" status="unofficial">
+    <name>pipelight</name>
+    <description>Pipelight overlay</description>
+    <homepage>https://github.com/ryao/pipelight-overlay</homepage>
+    <owner type="project">
+      <email>ryao@gentoo.org</email>
+      <name>Richard Yao</name>
+    </owner>
+    <source type="git">git://github.com/ryao/pipelight-overlay.git</source>
+    <feed>https://github.com/ryao/pipelight-overlay/commits/master.atom</feed>
+  </repo>
+</repositories>
