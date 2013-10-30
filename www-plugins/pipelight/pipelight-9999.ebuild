@@ -16,22 +16,25 @@ SLOT="0"
 KEYWORDS=""
 IUSE=""
 
-DEPEND="app-emulation/wine-compholio[abi_x86_32]
+DEPEND="app-emulation/wine-compholio[X,abi_x86_32]
 	cross-i686-w64-mingw32/gcc
 	cross-i686-w64-mingw32/binutils
 	cross-i686-w64-mingw32/mingw64-runtime"
 RDEPEND="${DEPEND}
-	gnome-extra/zenity"
+	gnome-extra/zenity
+	x11-apps/mesa-progs"
+
+# Supported plugins
+PLUGINS=("silverlight5.1" "silverlight5.0" "silverlight4" "flash" "shockwave" "unity3d")
 
 src_prepare() {
 	sed -i \
-		-e "s:^\(PLUGIN_DIR=\)\(.*\):\1/usr/$(get_libdir)/mozilla/plugins:" \
+		-e "s:^\(prefix=\)\(.*\):\1/usr:" \
+		-e "s:lib/:$(get_libdir)/:g" \
+		-e "s:^\(gccruntimedlls=\)\(.*\):\1/usr/$(get_libdir)/gcc/i686-w64-mingw32/$(gcc -v |& grep 'gcc version' | awk '{print $3}'):" \
 		-e "s:^\(prefix=\)\(.*\):\1${EPREFIX}/usr:" \
 		./Makefile
 
-	sed -i \
-		-e "s:^gccRuntimeDlls\(.*\)lib\(.*\):gccRuntimeDlls\1$(get_libdir)/gcc/i686-w64-mingw32/$(ls /usr/$(get_libdir)/gcc/i686-w64-mingw32):" \
-		./share/pipelight
 }
 
 src_configure() {
@@ -46,4 +49,12 @@ src_install() {
 	doexe "${FILESDIR}/install-dependency"
 	doexe "${FILESDIR}/hw-accel-default"
 	doexe "${FILESDIR}/gizmos"
+
+	install -m 755 -t "${ED}/usr/lib64/pipelight" "${ED}/usr/$(get_libdir)/pipelight/libpipelight.so"
+	for i in "${PLUGINS[@]}"
+	do
+		#ln -s libpipelight.so "${ED}/usr/$(get_libdir)/pipelight/libpipelight-${i}.so"
+		cp "${ED}/usr/$(get_libdir)/pipelight/libpipelight.so" "${ED}/usr/$(get_libdir)/pipelight/libpipelight-${i}.so"
+	done
+
 }
