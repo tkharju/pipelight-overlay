@@ -25,7 +25,9 @@ RDEPEND="${DEPEND}
 	x11-apps/mesa-progs"
 
 # Supported plugins
-PLUGINS=("silverlight5.1" "silverlight5.0" "silverlight4" "flash" "shockwave" "unity3d")
+STANDARD_PLUGINS=("silverlight5.1" "silverlight5.0" "silverlight4" "flash" "unity3d" "widevine")
+ADDITIONAL_PLUGINS=("shockwave" "foxitpdf" "grandstream" "adobereader" "hikvision" "npactivex" "roblox")
+ALL_PLUGINS=("${STANDARD_PLUGINS[@]}" "${ADDITIONAL_PLUGINS[@]}")
 
 src_prepare() {
 	sed -i \
@@ -51,7 +53,7 @@ src_install() {
 	doexe "${FILESDIR}/gizmos"
 
 	install -m 755 -t "${ED}/usr/lib64/pipelight" "${ED}/usr/$(get_libdir)/pipelight/libpipelight.so"
-	for i in "${PLUGINS[@]}"
+	for i in "${ALL_PLUGINS[@]}"
 	do
 		#ln -s libpipelight.so "${ED}/usr/$(get_libdir)/pipelight/libpipelight-${i}.so"
 		cp "${ED}/usr/$(get_libdir)/pipelight/libpipelight.so" "${ED}/usr/$(get_libdir)/pipelight/libpipelight-${i}.so"
