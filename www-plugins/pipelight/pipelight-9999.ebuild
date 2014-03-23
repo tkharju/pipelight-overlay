@@ -31,7 +31,7 @@ src_prepare() {
 		-e "s:lib/:$(get_libdir)/:g" \
 		-e "s:^\(prefix=\)\(.*\):\1${EPREFIX}/usr:" \
 		-e "s:^\(win32cxx=\)\(.*\):\1${EPREFIX}/opt/wine-compholio/bin/wineg++:" \
-		-e "s:^\(win32flags=\)\(.*\):\1-m32 -malign-double -Wl,-rpath=${EPREFIX}/opt/wine-compholio/lib32:" \
+		-e "s:^\(win32flags=\)\(.*\):\1-m32 -Wl,-rpath=${EPREFIX}/opt/wine-compholio/lib32:" \
 		./Makefile
 
 }
