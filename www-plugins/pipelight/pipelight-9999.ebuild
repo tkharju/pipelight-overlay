@@ -16,10 +16,7 @@ SLOT="0"
 KEYWORDS=""
 IUSE=""
 
-DEPEND="app-emulation/wine-compholio[X,abi_x86_32]
-	cross-i686-w64-mingw32/gcc
-	cross-i686-w64-mingw32/binutils
-	cross-i686-w64-mingw32/mingw64-runtime"
+DEPEND="app-emulation/wine-compholio[X,abi_x86_32]"
 RDEPEND="${DEPEND}
 	gnome-extra/zenity
 	x11-apps/mesa-progs"
@@ -31,16 +28,20 @@ ALL_PLUGINS=("${STANDARD_PLUGINS[@]}" "${ADDITIONAL_PLUGINS[@]}")
 
 src_prepare() {
 	sed -i \
-		-e "s:^\(prefix=\)\(.*\):\1/usr:" \
 		-e "s:lib/:$(get_libdir)/:g" \
-		-e "s:^\(gccruntimedlls=\)\(.*\):\1/usr/$(get_libdir)/gcc/i686-w64-mingw32/$(gcc -v |& grep 'gcc version' | awk '{print $3}'):" \
 		-e "s:^\(prefix=\)\(.*\):\1${EPREFIX}/usr:" \
+		-e "s:^\(win32cxx=\)\(.*\):\1${EPREFIX}/opt/wine-compholio/bin/wineg++:" \
+		-e "s:^\(win32flags=\)\(.*\):\1-m32 -malign-double -Wl,-rpath=${EPREFIX}/opt/wine-compholio/lib32:" \
 		./Makefile
 
 }
 
 src_configure() {
 	:
+}
+
+src_compile() {
+	emake WINEBUILD=${EPREFIX}/opt/wine-compholio/bin/winebuild
 }
 
 src_install() {
