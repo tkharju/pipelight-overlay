@@ -18,6 +18,7 @@ IUSE=""
 
 DEPEND="app-emulation/wine-compholio[X,abi_x86_32]"
 RDEPEND="${DEPEND}
+	app-arch/cabextract
 	gnome-extra/zenity
 	x11-apps/mesa-progs"
 
